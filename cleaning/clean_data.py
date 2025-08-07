@@ -1,12 +1,12 @@
 import pandas as pd
+import numpy as np
+from sklearn.preprocessing import MinMaxScaler  
 
-# Function to handle missing values, convert gender to lowercase, and handle binary conversion
+# Function to handle missing values, clean categorical columns, and handle binary conversion
 def handle_missing_and_binary_conversion(df, binary_columns=['HasCrCard', 'IsActiveMember', 'Churn']):
-    """Handle missing values and binary conversion in the dataset"""
     
     # Handle missing values in 'Gender' and fill with mode (most frequent value)
     if 'Gender' in df.columns:
-        # Fill missing values in 'Gender' with the mode (most frequent value)
         gender_mode = df['Gender'].mode()[0]
         df['Gender'] = df['Gender'].fillna(gender_mode)
         
@@ -17,11 +17,11 @@ def handle_missing_and_binary_conversion(df, binary_columns=['HasCrCard', 'IsAct
     numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
     for col in numeric_cols:
         if df[col].isnull().sum() > 0:
-            mean_value = df[col].mean()  # Replace with mean
+            mean_value = df[col].mean()  
             df[col] = df[col].fillna(mean_value)
 
-    # Drop rows where 'CustomerID' is missing (if any)
-    df = df.dropna(subset=['CustomerID'])
+    # Drop rows where 'CustomerID' and 'Churn' is missing
+    df = df.dropna(subset=['CustomerID', 'Churn'])
 
     # 3. Convert binary columns to int (0 or 1)
     for col in binary_columns:
@@ -39,7 +39,8 @@ def handle_missing_and_binary_conversion(df, binary_columns=['HasCrCard', 'IsAct
 
 # Function to handle outliers using the IQR method
 def handle_outliers(df):
-    """Detect and remove outliers in the dataset"""
+    
+    print(f"Shape before outlier handling: {df.shape}")
     
     # Identify numeric columns for outlier detection
     numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
@@ -52,28 +53,56 @@ def handle_outliers(df):
         lower_bound = Q1 - 1.5 * IQR
         upper_bound = Q3 + 1.5 * IQR
 
-        # Replace outliers with the median value of the column
-        median_value = df[col].median()
-        df.loc[(df[col] < lower_bound) | (df[col] > upper_bound), col] = median_value
+        # Remove the rows with outliers (filter the data to exclude outliers)
+        df = df[(df[col] >= lower_bound) & (df[col] <= upper_bound)]
+        
+    print(f"Shape after outlier handling: {df.shape}")
+    return df
 
-    print("Outliers handled by replacing them with the median.")
+# Function to apply Min-Max Scaling
+def apply_min_max_scaling(df):
+    
+    # Check if DataFrame is empty after cleaning and outlier removal
+    if df.empty:
+        print("Error: The dataset is empty after cleaning and outlier removal.")
+        return df
+
+    print(f"Shape before scaling: {df.shape}")
+
+    # Select numeric columns
+    numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
+
+    # Initialize MinMaxScaler
+    scaler = MinMaxScaler()
+
+    # Apply scaling to the selected columns
+    df[numeric_cols] = scaler.fit_transform(df[numeric_cols])
+
+    print(f"Shape after scaling: {df.shape}")
     return df
 
 
-# Example of how to use the functions:
 def main():
     # Load the dataset
-    df = pd.read_csv('../exl_credit_card_churn_data.csv')  # Use your file path
+    df = pd.read_csv('../exl_credit_card_churn_data.csv')  
     
-    # Handle missing data and binary conversion
+    # Handle missing data
     df = handle_missing_and_binary_conversion(df)
+    print("After cleaning:")
+    print(df.shape)
     
     # Handle outliers
     df = handle_outliers(df)
-    
-    # Optionally, save the cleaned data to a new file
-    df.to_csv('cleaned_churn_data.csv', index=False)
-    print("Data cleaning complete and saved to 'cleaned_churn_data.csv'.")
+    print("After outlier removal:")
+    print(df.shape)
+
+    # Apply Min-Max Scaling
+    df = apply_min_max_scaling(df)
+    print("After scaling:")
+    print(df.shape)
+
+    df.to_csv('clean_data.csv', index=False)
+    print("Data cleaning complete, scaling applied, and saved to 'clean_data.csv'.")
 
 if __name__ == "__main__":
     main()
