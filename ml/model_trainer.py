@@ -61,7 +61,7 @@ def plot_confusion_matrix(y_test, y_pred):
 
 # Main function
 def main():
-    train_and_predict_model('cleaned_churn_data.csv')
+    train_and_predict_model('../cleaning/cleaned_churn_data.csv')
 
 if __name__ == "__main__":
     main()

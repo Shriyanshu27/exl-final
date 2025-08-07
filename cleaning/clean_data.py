@@ -63,7 +63,7 @@ def handle_outliers(df):
 # Example of how to use the functions:
 def main():
     # Load the dataset
-    df = pd.read_csv('exl_credit_card_churn_data.csv')  # Use your file path
+    df = pd.read_csv('../exl_credit_card_churn_data.csv')  # Use your file path
     
     # Handle missing data and binary conversion
     df = handle_missing_and_binary_conversion(df)

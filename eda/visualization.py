@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Load both the original and cleaned datasets
-df_original = pd.read_csv('exl_credit_card_churn_data.csv')  # Original dataset (before cleaning)
-df_cleaned = pd.read_csv('cleaned_churn_data.csv')    # Cleaned dataset
+df_original = pd.read_csv('../exl_credit_card_churn_data.csv')  # Original dataset (before cleaning)
+df_cleaned = pd.read_csv('../cleaning/cleaned_churn_data.csv')    # Cleaned dataset
 
 # Define a custom color palette
 custom_palette = ['#1f77b4', '#ff7f0e']  # Example: blue and orange
